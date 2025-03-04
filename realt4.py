@@ -4,7 +4,7 @@ import cv2
 from ultralytics import YOLO
 
 # 1. YOLO 모델 로드
-model = YOLO("best.pt")  # 모델 파일 경로 수정 가능
+model = YOLO("/home/rolab/test_code/ROLAB_202425/best.pt")  # 모델 파일 경로 수정 가능
 
 # 2. RealSense 파이프라인 및 스트림 설정
 pipeline = rs.pipeline()
@@ -19,6 +19,7 @@ pipeline.start(config)
 align_to = rs.stream.color
 align = rs.align(align_to)
 
+
 try:
     # 화면 및 타겟 범위 정보
     width, height = 640, 480
@@ -28,12 +29,17 @@ try:
 
     # 중앙 주변 픽셀을 평균낼 때 사용할 범위
     region_size = 5  # 예: 중심 좌표 주변 (±5) 픽셀
-    
+    cnt=0
     while True:
         # 5. 프레임 획득 및 컬러/깊이 정렬
+        
         frames = pipeline.wait_for_frames()
         aligned_frames = align.process(frames)
-
+        cnt+=1
+        if cnt%20!=0:
+            
+            continue
+        cnt=0
         aligned_depth_frame = aligned_frames.get_depth_frame()
         aligned_color_frame = aligned_frames.get_color_frame()
 
@@ -78,7 +84,7 @@ try:
         cv2.line(annotated_frame, (center_x, 0), (center_x, height), (0, 0, 0), 2)
         # 타겟 박스(녹색)
         cv2.rectangle(annotated_frame, (target_x1, target_y1),
-                      (target_x2, target_y2), (0, 255, 0), 3)
+                    (target_x2, target_y2), (0, 255, 0), 3)
 
         # 깊이 데이터를 컬러맵으로 변환 (오른쪽에 표시)
         depth_colormap = cv2.applyColorMap(
@@ -167,5 +173,6 @@ try:
 
 finally:
     # 리소스 해제
+    print("error")
     pipeline.stop()
     cv2.destroyAllWindows()
